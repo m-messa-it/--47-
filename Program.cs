@@ -1,63 +1,60 @@
 using System;
-using System.Text;
 using System.Threading;
 
 class Program
 {
     static void Main(string[] args)
     {
-        // Налаштування коректного відображення української мови в консолі
-        Console.OutputEncoding = Encoding.UTF8;
-
-        // 1. Створення масиву цілих чисел довжиною 20 елементів
+        // створюємо масив з 20 елементів
         int[] numbers = new int[20];
         Random random = new Random();
 
-        // Заповнення випадковими значеннями від 1 до 12
+        // заповнюємо масив випадковими числами від 1 до 12
         for (int i = 0; i < numbers.Length; i++)
         {
-            numbers[i] = random.Next(1, 13); // від 1 до 12 включно
+            numbers[i] = random.Next(1, 13);
         }
 
-        Console.WriteLine("Згенерований масив чисел:");
-        Console.WriteLine(string.Join(", ", numbers));
-        Console.WriteLine("\nЗапуск розрахунку факторіалів у потоках Thread...\n");
-
-        // Масив для збереження посилань на потоки
-        Thread[] threads = new Thread[numbers.Length];
-
-        // 2. Для кожного елемента масиву створення та запуск окремого потоку Thread
+        // виводимо масив
+        Console.Write("Масив чисел: ");
         for (int i = 0; i < numbers.Length; i++)
         {
-            int num = numbers[i]; // Локальна копія змінної для замикання в потоці
+            Console.Write(numbers[i] + " ");
+        }
+        Console.WriteLine();
+        Console.WriteLine();
+
+        // масив потоків
+        Thread[] threads = new Thread[numbers.Length];
+
+        for (int i = 0; i < numbers.Length; i++)
+        {
+            int num = numbers[i]; // треба щоб i не змінилась поки потік запуститься
 
             threads[i] = new Thread(() =>
             {
-                long numF = CalculateFactorial(num);
+                long numF = Factorial(num);
                 Console.WriteLine($"факторіал числа: {num}! = {numF}");
             });
 
-            // Запуск потоку
             threads[i].Start();
         }
 
-        // 3. Очікування завершення роботи усіх потоків
+        // чекаємо поки всі потоки закінчать роботу
         for (int i = 0; i < threads.Length; i++)
         {
             threads[i].Join();
         }
 
-        // 4. Повідомлення про закінчення після того, як всі потоки відпрацювали
-        Console.WriteLine("\nРозрахунок закінчено.");
+        Console.WriteLine("Розрахунок закінчено.");
     }
 
-    // Метод для обчислення факторіалу числа
-    static long CalculateFactorial(int n)
+    static long Factorial(int n)
     {
         long result = 1;
         for (int i = 2; i <= n; i++)
         {
-            result *= i;
+            result = result * i;
         }
         return result;
     }
