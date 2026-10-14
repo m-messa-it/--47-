@@ -1,76 +1,64 @@
-﻿namespace ArrayHelperApp;
-
-public static class ArrayHelper
-{
-    public static void PrintArray<T>(T[] array, string title)
-    {
-        Console.WriteLine($"{title}:");
-        Console.WriteLine(string.Join(" ", array));
-    }
-
-    public static int IndexOf<T>(T[] array, T value)
-    {
-        for (int i = 0; i < array.Length; i++)
-        {
-            if (array[i].Equals(value)) return i;
-        }
-        return -1;
-    }
-
-    public static T Min<T>(T[] array) where T : IComparable<T>
-    {
-        T min = array[0];
-        for (int i = 1; i < array.Length; i++)
-        {
-            if (array[i].CompareTo(min) < 0) min = array[i];
-        }
-        return min;
-    }
-
-    public static T Max<T>(T[] array) where T : IComparable<T>
-    {
-        T max = array[0];
-        for (int i = 1; i < array.Length; i++)
-        {
-            if (array[i].CompareTo(max) > 0) max = array[i];
-        }
-        return max;
-    }
-
-    public static T[] Reverse<T>(T[] array)
-    {
-        T[] reversed = (T[])array.Clone();
-        int left = 0, right = reversed.Length - 1;
-        while (left < right)
-        {
-            T temp = reversed[left];
-            reversed[left] = reversed[right];
-            reversed[right] = temp;
-            left++;
-            right--;
-        }
-        return reversed;
-    }
-}
+using System;
+using System.Text;
+using System.Threading;
 
 class Program
 {
     static void Main(string[] args)
     {
-        int[] numbers = { 5, 12, 1, 9, 20 };
-        ArrayHelper.PrintArray(numbers, "Числа");
-        Console.WriteLine($"Індекс 9: {ArrayHelper.IndexOf(numbers, 9)}");
-        Console.WriteLine($"Мін: {ArrayHelper.Min(numbers)}");
-        Console.WriteLine($"Макс: {ArrayHelper.Max(numbers)}");
-        Console.WriteLine($"Реверс: {string.Join(" ", ArrayHelper.Reverse(numbers))}");
+        // Налаштування коректного відображення української мови в консолі
+        Console.OutputEncoding = Encoding.UTF8;
 
-        Console.WriteLine();
+        // 1. Створення масиву цілих чисел довжиною 20 елементів
+        int[] numbers = new int[20];
+        Random random = new Random();
 
-        string[] words = { "один", "два", "три", "чотири" };
-        ArrayHelper.PrintArray(words, "Рядки");
-        Console.WriteLine($"Індекс три: {ArrayHelper.IndexOf(words, "три")}");
-        Console.WriteLine($"Мін: {ArrayHelper.Min(words)}");
-        Console.WriteLine($"Макс: {ArrayHelper.Max(words)}");
-        Console.WriteLine($"Реверс: {string.Join(" ", ArrayHelper.Reverse(words))}");
+        // Заповнення випадковими значеннями від 1 до 12
+        for (int i = 0; i < numbers.Length; i++)
+        {
+            numbers[i] = random.Next(1, 13); // від 1 до 12 включно
+        }
+
+        Console.WriteLine("Згенерований масив чисел:");
+        Console.WriteLine(string.Join(", ", numbers));
+        Console.WriteLine("\nЗапуск розрахунку факторіалів у потоках Thread...\n");
+
+        // Масив для збереження посилань на потоки
+        Thread[] threads = new Thread[numbers.Length];
+
+        // 2. Для кожного елемента масиву створення та запуск окремого потоку Thread
+        for (int i = 0; i < numbers.Length; i++)
+        {
+            int num = numbers[i]; // Локальна копія змінної для замикання в потоці
+
+            threads[i] = new Thread(() =>
+            {
+                long numF = CalculateFactorial(num);
+                Console.WriteLine($"факторіал числа: {num}! = {numF}");
+            });
+
+            // Запуск потоку
+            threads[i].Start();
+        }
+
+        // 3. Очікування завершення роботи усіх потоків
+        for (int i = 0; i < threads.Length; i++)
+        {
+            threads[i].Join();
+        }
+
+        // 4. Повідомлення про закінчення після того, як всі потоки відпрацювали
+        Console.WriteLine("\nРозрахунок закінчено.");
+    }
+
+    // Метод для обчислення факторіалу числа
+    static long CalculateFactorial(int n)
+    {
+        long result = 1;
+        for (int i = 2; i <= n; i++)
+        {
+            result *= i;
+        }
+        return result;
     }
 }
